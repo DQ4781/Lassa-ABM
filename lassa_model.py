@@ -154,7 +154,8 @@ class lassaModel(Model):
 
 
         self.datacollector = DataCollector(
-            model_reporters={"Total Humans Infected":calculate_number_infected, 
+            model_reporters={"Daily H2H Reproduction Number":calculate_human_reproduction_number,
+                             "Daily R2H Reproduction Number":calculate_rat_reproduction_number, 
                              "Daily H2H Infections":calculate_human_secondary_infections,
                              "Daily R2H Infections":calculate_rat_secondary_infections
                             },

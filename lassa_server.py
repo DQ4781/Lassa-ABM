@@ -39,8 +39,9 @@ grid = CanvasGrid(agent_portrayal, 20, 20, 700, 700)
 
 
 # Creates our charts
-total_infected_graph = ChartModule(
-    [{"Label":"Total Humans Infected", "Color":"Red"}],
+total_reproduction_number_graph = ChartModule(
+    [{"Label":"H2H Reproduction Number", "Color":"SlateBlue"},
+     {"Label":"R2H Reproduction Number", "Color":"RosyBrown"}],
     data_collector_name='datacollector'
     )
 
@@ -99,7 +100,7 @@ hygienic_housing_slider = UserSettableParameter(
 
 
 
-server = ModularServer(lassaModel, [grid, total_infected_graph, total_secondary_infections_graph], "Intervention Strategies for the Control of Periodic Lassa Fever Outbreaks", 
+server = ModularServer(lassaModel, [grid, total_reproduction_number_graph, total_secondary_infections_graph], "Intervention Strategies for the Control of Periodic Lassa Fever Outbreaks", 
     {   
         "N_humans": num_human_slider, 
         "N_rats": num_rat_slider, 
