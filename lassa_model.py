@@ -115,7 +115,7 @@ class superAgent(Agent):
                     
 
 class lassaModel(Model):
-    """Look at da flick of da wrist"""
+
     def __init__(self, N_humans, N_rats, width, height, hum_init_infection, rat_init_infection, hum_transmissibility, rat_transmissibility, hum_level_of_movement, rat_level_of_movement, 
     contagious_period_hum, contagious_period_rat, rodenticide, rat_trap, safe_food_storage, hygienic_housing):
         self.running    = True
@@ -169,18 +169,6 @@ class lassaModel(Model):
         resetInfections(self)
 
 # Graph Functions
-
-def calculate_number_infected(model):
-
-    total_infected_humans      = 0
-    infection_report    = [agent.infected for agent in model.schedule.agents]
-
-    for x in infection_report:
-        if x == True:
-            total_infected_humans += 1
-
-    return total_infected_humans
-
 
 def calculate_human_secondary_infections(model):
 
@@ -250,8 +238,6 @@ def calculate_human_reproduction_number(model):
 
 
 
-"""
-INCOMPLETE
 
 def calculate_rat_reproduction_number(model):
     r2h_trans_rate          = determine_r2h_trans_rate(model)
@@ -262,16 +248,16 @@ def calculate_rat_reproduction_number(model):
 
     return r2h_r0 
 
-
+""""
 def determine_r2h_trans_rate(model):
     
-    if poison slider > 0 OR trapping slider > 0:
+    if poison slider is on OR trapping slider is on:
         rate = 60%
-    elif food_storage slider > 0 AND better_infrastructure slider > 0:
+    elif food_storage slider is on AND better_infrastructure slider is on:
         rate = 2%
-    elif food_storage slider > 0:
+    elif food_storage slider is on:
         rate = 33%
-    elif better_infrastructure slider > 0:
+    elif better_infrastructure slider is on:
         rate = 12%
 
     return rate
