@@ -248,18 +248,22 @@ def calculate_human_reproduction_number(model):
     return h2h_r0
 
 
-#def calculate_rat_reproduction_number(model):
-#    r2h_trans_rate          = determine_r2h_trans_rate(model)
-#    r2h_trans_avg           = calculate_avg_secondary_infection(model, "Rat")
-#    rat_contagious_period   = 21
 
-#    r2h_r0 = r2h_trans_rate * r2h_trans_avg * rat_contagious_period
+"""
+INCOMPLETE
 
-#    return r2h_r0 
+def calculate_rat_reproduction_number(model):
+    r2h_trans_rate          = determine_r2h_trans_rate(model)
+    r2h_trans_avg           = calculate_avg_secondary_infection(model, "Rat")
+    rat_contagious_period   = 21
+
+    r2h_r0 = r2h_trans_rate * r2h_trans_avg * rat_contagious_period
+
+    return r2h_r0 
 
 
-# def determine_r2h_trans_rate(model):
-    """
+def determine_r2h_trans_rate(model):
+    
     if poison slider > 0 OR trapping slider > 0:
         rate = 60%
     elif food_storage slider > 0 AND better_infrastructure slider > 0:
@@ -270,4 +274,4 @@ def calculate_human_reproduction_number(model):
         rate = 12%
 
     return rate
-    """ 
+""" 
