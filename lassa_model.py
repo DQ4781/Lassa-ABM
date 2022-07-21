@@ -14,6 +14,17 @@ from mesa.datacollection import DataCollector
 import random
 
 
+"""
+    CONSTANTS
+    Adjust these variables with respect to the scenario you're checking
+"""
+adoption_rate                   = 45
+poison                          = False
+trapping                        = False
+foodStorage                     = False
+infrastructure                  = False
+
+
 class superAgent(Agent):
 
     def __init__(self, unique_id, model, init_infection, transmissibility, level_of_movement, 
@@ -154,8 +165,8 @@ class lassaModel(Model):
 
 
         self.datacollector = DataCollector(
-            model_reporters={"Daily H2H Reproduction Number":calculate_human_reproduction_number,
-                             "Daily R2H Reproduction Number":calculate_rat_reproduction_number, 
+            model_reporters={"H2H Reproduction Number":calculate_human_reproduction_number,
+                             "R2H Reproduction Number":calculate_rat_reproduction_number, 
                              "Daily H2H Infections":calculate_human_secondary_infections,
                              "Daily R2H Infections":calculate_rat_secondary_infections
                             },
@@ -195,6 +206,26 @@ def calculate_rat_secondary_infections(model):
     return rat_secondary_infections
 
 
+def calculate_human_reproduction_number(model):
+    h2h_trans_rate          = 20
+    h2h_trans_avg           = calculate_avg_secondary_infection(model, "Human")
+    hum_contagious_period   = 12
+
+    h2h_r0 = h2h_trans_rate * h2h_trans_avg * hum_contagious_period
+
+    return h2h_r0
+
+
+def calculate_rat_reproduction_number(model):
+    r2h_trans_rate          = determine_r2h_trans_rate(model)
+    r2h_trans_avg           = calculate_avg_secondary_infection(model, "Rat")
+    rat_contagious_period   = 21
+
+    r2h_r0 = r2h_trans_rate * r2h_trans_avg * rat_contagious_period
+
+    return r2h_r0 
+
+
 # Helper Functions
 
 def resetInfections(model):
@@ -213,11 +244,12 @@ def calculate_avg_secondary_infection(model, agentType):
     num_rats         = 0
     total_agent_list = model.schedule.agents
 
+    # Counts how many total human/rat agents there are
     for x in total_agent_list:
         if x.is_human:
             num_humans += 1
         else:
-            num_hats += 1
+            num_rats += 1
 
     if agentType == "Human":
         avg = calculate_human_secondary_infections(model) / num_humans
@@ -227,38 +259,11 @@ def calculate_avg_secondary_infection(model, agentType):
     return avg
 
 
-def calculate_human_reproduction_number(model):
-    h2h_trans_rate          = 20
-    h2h_trans_avg           = calculate_avg_secondary_infection(model, "Human")
-    hum_contagious_period   = 12
-
-    h2h_r0 = h2h_trans_rate * h2h_trans_avg * hum_contagious_period
-
-    return h2h_r0
-
-
-
-
-def calculate_rat_reproduction_number(model):
-    r2h_trans_rate          = determine_r2h_trans_rate(model)
-    r2h_trans_avg           = calculate_avg_secondary_infection(model, "Rat")
-    rat_contagious_period   = 21
-
-    r2h_r0 = r2h_trans_rate * r2h_trans_avg * rat_contagious_period
-
-    return r2h_r0 
-
-""""
 def determine_r2h_trans_rate(model):
-    
-    if poison slider is on OR trapping slider is on:
-        rate = 60%
-    elif food_storage slider is on AND better_infrastructure slider is on:
-        rate = 2%
-    elif food_storage slider is on:
-        rate = 33%
-    elif better_infrastructure slider is on:
-        rate = 12%
+
+    for agent in model.schedule.agents:
+        if not agent.is_human:
+            rate = agent.r2h_transmissibility
 
     return rate
-""" 
+
