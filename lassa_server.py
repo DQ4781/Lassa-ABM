@@ -61,6 +61,9 @@ num_human_slider = UserSettableParameter(
 num_rat_slider = UserSettableParameter(
         'slider', "Number of Rat Agents", 5, 2, 200, 1)
 
+adoption_rate_slider = UserSettableParameter(
+    'slider', "Human Agents that Adopt Intervention Strategies(%)", 0, 0, 100, 1)
+
 hum_init_infection_slider = UserSettableParameter(
     'slider', "Probability of Human Initial Infection(%)", 30, 1, 100, 1)
 
@@ -85,17 +88,19 @@ hum_contagious_period_slider = UserSettableParameter(
 rat_contagious_period_slider = UserSettableParameter(
     'slider', "Contagious period for rats(days)", 21, 2, 84, 1)
 
-hum_rodenticide_slider = UserSettableParameter(
-    'slider', "Humans that use rodenticide(%)", 10, 0, 100, 1)
 
-rat_trap_slider = UserSettableParameter(
-    'slider', "Humans that use rat traps(%)", 10, 0, 100, 1)
+# Set up user checkboxes
+hum_rodenticide_checkbox = UserSettableParameter(
+    'checkbox', "Humans that use rodenticide", value=False)
 
-food_storage_slider = UserSettableParameter(
-    'slider', "Humans that use practice safe food storage(%)", 10, 0, 100, 1)
+rat_trap_checkbox = UserSettableParameter(
+    'checkbox', "Humans that use rat traps", value=False)
 
-hygienic_housing_slider = UserSettableParameter(
-    'slider', "Humans that have hygienic housing(%)", 10, 0, 100, 1)
+food_storage_checkbox = UserSettableParameter(
+    'checkbox', "Humans that practice safe food storage", value=False)
+
+hygienic_housing_checkbox = UserSettableParameter(
+    'checkbox', "Humans that have hygienic housing", value=False)
 
 
 
@@ -103,7 +108,8 @@ hygienic_housing_slider = UserSettableParameter(
 server = ModularServer(lassaModel, [grid, total_reproduction_number_graph, total_secondary_infections_graph], "Intervention Strategies for the Control of Periodic Lassa Fever Outbreaks", 
     {   
         "N_humans": num_human_slider, 
-        "N_rats": num_rat_slider, 
+        "N_rats": num_rat_slider,
+        "adoption_rate":adoption_rate_slider,
         "width": 20,
         "height":20,
         "hum_init_infection": hum_init_infection_slider,
@@ -114,9 +120,9 @@ server = ModularServer(lassaModel, [grid, total_reproduction_number_graph, total
         "rat_level_of_movement": rat_level_of_movement_slider,
         "contagious_period_hum": hum_contagious_period_slider,
         "contagious_period_rat": rat_contagious_period_slider,
-        "rodenticide": hum_rodenticide_slider,
-        "rat_trap": rat_trap_slider,
-        "safe_food_storage": food_storage_slider,
-        "hygienic_housing": hygienic_housing_slider    
+        "rodenticide": hum_rodenticide_checkbox,
+        "rat_trap": rat_trap_checkbox,
+        "safe_food_storage": food_storage_checkbox,
+        "hygienic_housing": hygienic_housing_checkbox    
     }
 )

@@ -18,7 +18,6 @@ import random
     CONSTANTS
     Adjust these variables with respect to the scenario you're checking
 """
-adoption_rate                   = 45
 poison                          = False
 trapping                        = False
 foodStorage                     = False
@@ -127,13 +126,14 @@ class superAgent(Agent):
 
 class lassaModel(Model):
 
-    def __init__(self, N_humans, N_rats, width, height, hum_init_infection, rat_init_infection, hum_transmissibility, rat_transmissibility, hum_level_of_movement, rat_level_of_movement, 
+    def __init__(self, N_humans, N_rats, adoption_rate,width, height, hum_init_infection, rat_init_infection, hum_transmissibility, rat_transmissibility, hum_level_of_movement, rat_level_of_movement, 
     contagious_period_hum, contagious_period_rat, rodenticide, rat_trap, safe_food_storage, hygienic_housing):
-        self.running    = True
-        self.num_humans = N_humans
-        self.num_rats   = N_rats
-        self.grid       = MultiGrid(width, height, True)
-        self.schedule   = RandomActivation(self)
+        self.running        = True
+        self.num_humans     = N_humans
+        self.num_rats       = N_rats
+        self.grid           = MultiGrid(width, height, True)
+        self.schedule       = RandomActivation(self)
+        self.adoption_rate  = adoption_rate
 
         # Creates human agents
         for i in range(self.num_humans):
