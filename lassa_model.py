@@ -12,16 +12,7 @@ from mesa.datacollection import DataCollector
 
 
 import random
-
-
-"""
-    CONSTANTS
-    Adjust these variables with respect to the scenario you're checking
-"""
-poison                          = False
-trapping                        = False
-foodStorage                     = False
-infrastructure                  = False
+import math
 
 
 class superAgent(Agent):
@@ -42,6 +33,8 @@ class superAgent(Agent):
             self.hygienic_housing           = hygienic_housing
             self.safe_food_storage          = safe_food_storage
             self.is_human                   = True
+            self.adoption_group             = False
+            self.kill_chance                = 0
             self.secondary_transmission_h2h = 0
         # Theses parameters define the attributes that make up a rat agent
         else:
@@ -128,12 +121,16 @@ class lassaModel(Model):
 
     def __init__(self, N_humans, N_rats, adoption_rate,width, height, hum_init_infection, rat_init_infection, hum_transmissibility, rat_transmissibility, hum_level_of_movement, rat_level_of_movement, 
     contagious_period_hum, contagious_period_rat, rodenticide, rat_trap, safe_food_storage, hygienic_housing):
-        self.running        = True
-        self.num_humans     = N_humans
-        self.num_rats       = N_rats
-        self.grid           = MultiGrid(width, height, True)
-        self.schedule       = RandomActivation(self)
-        self.adoption_rate  = adoption_rate
+        self.running            = True
+        self.num_humans         = N_humans
+        self.num_rats           = N_rats
+        self.grid               = MultiGrid(width, height, True)
+        self.schedule           = RandomActivation(self)
+        self.adoption_rate      = adoption_rate
+        self.rodenticide        = rodenticide
+        self.rat_trap           = rat_trap
+        self.safe_food_storage  = safe_food_storage
+        self.hygienic_housing   = hygienic_housing
 
         # Creates human agents
         for i in range(self.num_humans):
@@ -149,6 +146,12 @@ class lassaModel(Model):
                 y = random.randrange(self.grid.height)
                 self.grid.place_agent(human, (x,y))
 
+            # Once we added human agents to the scheduler, check if any of scenarios are turned on in order to randomly assign human agents to the adoption group 
+            if rodenticide or rat_trap or safe_food_storage or hygienic_housing:
+                determine_adoption_population(self)
+                update_kill_chance(self)
+
+
         # Creates rat agents
         for i in range(self.num_rats):
             rat = superAgent((2*i)+1, self, rat_init_infection, rat_transmissibility, rat_level_of_movement, contagious_period_rat, is_human=False, rodenticide=0, rat_trap=0, hygienic_housing=0, safe_food_storage=0)
@@ -162,6 +165,9 @@ class lassaModel(Model):
                 y = random.randrange(self.grid.height)
                 self.grid.place_agent(rat, (x,y))
 
+            # If any of the scenarios are turned on, they we must update the rates accordingly
+            if rodenticide or rat_trap or safe_food_storage or hygienic_housing:
+                update_r2h_trans(self)
 
 
         self.datacollector = DataCollector(
@@ -266,4 +272,46 @@ def determine_r2h_trans_rate(model):
             rate = agent.r2h_transmissibility
 
     return rate
+
+
+def determine_adoption_population(model):
+
+    adoption_rate_percent       = model.adoption_rate/100
+    adoption_size               = math.floor(adoption_rate_percent * model.num_humans)
+
+    adoption_group_list = random.sample(model.schedule.agents, k=adoption_size)
+
+    for i in adoption_group_list:
+        i.adoption_group = True
+
+
+def update_kill_chance(model):
+
+    if model.rodenticide and model.rat_trap:
+        kill_chance = random.randint(1,16) + random.randint(40,80)
+    elif model.rodenticide:
+        kill_chance = random.randint(40,80)
+    elif model.rat_trap:
+        kill_chance = random.randint(1,16)
+
+    for i in model.schedule.agents:
+        if i.adoption_group:
+            i.kill_chance = kill_chance
+
+
+def update_r2h_trans(model):
+
+    r2h_rate = 60
+
+    if model.safe_food_storage and model.hygienic_housing:
+        r2h_rate = 2
+    elif model.hygienic_housing:
+        r2h_rate = 12
+    elif model.safe_food_storage:
+        r2h_rate = 33
+
+    for i in model.schedule.agents:
+        if not i.is_human:
+            i.r2h_transmissibility = r2h_rate
+
 
