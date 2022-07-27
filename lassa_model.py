@@ -264,7 +264,7 @@ def calculate_total_reproduction_number(model):
     first_eigenvalue    = (trace/2) + math.sqrt((trace/2)**2 - determinant)
     second_eigenvalue   = (trace/2) - math.sqrt((trace/2)**2 - determinant)
 
-    return max(first_eigenvalue, second_eigenvalue)
+    return first_eigenvalue + second_eigenvalue
 
 
 
