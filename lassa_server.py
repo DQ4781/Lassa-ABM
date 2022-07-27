@@ -32,7 +32,7 @@ def agent_portrayal(agent):
 
 
 # Setups how the grid is going to be displayed on the webpage
-grid = CanvasGrid(agent_portrayal, 20, 20, 700, 700)
+grid = CanvasGrid(agent_portrayal, 30, 30, 800, 800)
 
 
 
@@ -40,8 +40,7 @@ grid = CanvasGrid(agent_portrayal, 20, 20, 700, 700)
 
 # Creates our charts
 total_reproduction_number_graph = ChartModule(
-    [{"Label":"H2H Reproduction Number", "Color":"SlateBlue"},
-     {"Label":"R2H Reproduction Number", "Color":"RosyBrown"}],
+    [{"Label":"Daily Reproduction Number", "Color":"SlateBlue"}],
     data_collector_name='datacollector'
     )
 
@@ -56,10 +55,10 @@ total_secondary_infections_graph = ChartModule(
 
 # Set up user sliders
 num_human_slider = UserSettableParameter(
-        'slider', "Number of Human Agents", 20, 2, 200, 1)
+        'slider', "Number of Human Agents", 100, 2, 200, 1)
 
 num_rat_slider = UserSettableParameter(
-        'slider', "Number of Rat Agents", 5, 2, 200, 1)
+        'slider', "Number of Rat Agents", 150, 2, 200, 1)
 
 adoption_rate_slider = UserSettableParameter(
     'slider', "Human Agents that Adopt Intervention Strategies(%)", 0, 0, 100, 1)
@@ -73,9 +72,6 @@ rat_init_infection_slider = UserSettableParameter(
 hum_transmissibility_slider = UserSettableParameter(
     'slider', "Transmissibilty between H2H", 20, 1, 100, 1)
 
-rat_transmissibility_slider = UserSettableParameter(
-    'slider', "Transmissibilty between R2H", 40, 1, 100, 1)
-
 hum_level_of_movement_slider = UserSettableParameter(
     'slider', "Level of movement for humans", 45, 1, 100, 1)
 
@@ -86,7 +82,7 @@ hum_contagious_period_slider = UserSettableParameter(
     'slider', "Contagious period for humans(days)", 12, 2, 21, 1)
 
 rat_contagious_period_slider = UserSettableParameter(
-    'slider', "Contagious period for rats(days)", 21, 2, 84, 1)
+    'slider', "Contagious period for rats(days)", 21, 80, 90, 1)
 
 
 # Set up user checkboxes
@@ -110,12 +106,12 @@ server = ModularServer(lassaModel, [grid, total_reproduction_number_graph, total
         "N_humans": num_human_slider, 
         "N_rats": num_rat_slider,
         "adoption_rate":adoption_rate_slider,
-        "width": 20,
-        "height":20,
+        "width": 30,
+        "height":30,
         "hum_init_infection": hum_init_infection_slider,
         "rat_init_infection": rat_init_infection_slider,
         "hum_transmissibility": hum_transmissibility_slider,
-        "rat_transmissibility": rat_transmissibility_slider,
+        "rat_transmissibility": 60,
         "hum_level_of_movement": hum_level_of_movement_slider,
         "rat_level_of_movement": rat_level_of_movement_slider,
         "contagious_period_hum": hum_contagious_period_slider,
