@@ -32,15 +32,15 @@ def agent_portrayal(agent):
 
 
 # Setups how the grid is going to be displayed on the webpage
-grid = CanvasGrid(agent_portrayal, 20, 20, 700, 700)
+grid = CanvasGrid(agent_portrayal, 30, 30, 800, 800)
 
 
 
 
 
 # Creates our charts
-total_infected_graph = ChartModule(
-    [{"Label":"Total Humans Infected", "Color":"Red"}],
+total_reproduction_number_graph = ChartModule(
+    [{"Label":"Daily Reproduction Number", "Color":"SlateBlue"}],
     data_collector_name='datacollector'
     )
 
@@ -55,10 +55,13 @@ total_secondary_infections_graph = ChartModule(
 
 # Set up user sliders
 num_human_slider = UserSettableParameter(
-        'slider', "Number of Human Agents", 20, 2, 200, 1)
+        'slider', "Number of Human Agents", 100, 2, 200, 1)
 
 num_rat_slider = UserSettableParameter(
-        'slider', "Number of Rat Agents", 5, 2, 200, 1)
+        'slider', "Number of Rat Agents", 150, 2, 200, 1)
+
+adoption_rate_slider = UserSettableParameter(
+    'slider', "Human Agents that Adopt Intervention Strategies(%)", 0, 0, 100, 1)
 
 hum_init_infection_slider = UserSettableParameter(
     'slider', "Probability of Human Initial Infection(%)", 30, 1, 100, 1)
@@ -69,9 +72,6 @@ rat_init_infection_slider = UserSettableParameter(
 hum_transmissibility_slider = UserSettableParameter(
     'slider', "Transmissibilty between H2H", 20, 1, 100, 1)
 
-rat_transmissibility_slider = UserSettableParameter(
-    'slider', "Transmissibilty between R2H", 40, 1, 100, 1)
-
 hum_level_of_movement_slider = UserSettableParameter(
     'slider', "Level of movement for humans", 45, 1, 100, 1)
 
@@ -79,43 +79,46 @@ rat_level_of_movement_slider = UserSettableParameter(
     'slider', "Level of movement for rats", 65, 1, 100, 1)
 
 hum_contagious_period_slider = UserSettableParameter(
-    'slider', "Contagious period for humans(days)", 12, 2, 21, 1)
+    'slider', "Contagious period for humans(days)", 44, 21, 90, 1)
 
 rat_contagious_period_slider = UserSettableParameter(
-    'slider', "Contagious period for rats(days)", 21, 2, 84, 1)
-
-hum_rodenticide_slider = UserSettableParameter(
-    'slider', "Humans that use rodenticide(%)", 10, 0, 100, 1)
-
-rat_trap_slider = UserSettableParameter(
-    'slider', "Humans that use rat traps(%)", 10, 0, 100, 1)
-
-food_storage_slider = UserSettableParameter(
-    'slider', "Humans that use practice safe food storage(%)", 10, 0, 100, 1)
-
-hygienic_housing_slider = UserSettableParameter(
-    'slider', "Humans that have hygienic housing(%)", 10, 0, 100, 1)
+    'slider', "Contagious period for rats(days)", 80, 21, 90, 1)
 
 
+# Set up user checkboxes
+hum_rodenticide_checkbox = UserSettableParameter(
+    'checkbox', "Humans that use rodenticide", value=False)
+
+rat_trap_checkbox = UserSettableParameter(
+    'checkbox', "Humans that use rat traps", value=False)
+
+food_storage_checkbox = UserSettableParameter(
+    'checkbox', "Humans that practice safe food storage", value=False)
+
+hygienic_housing_checkbox = UserSettableParameter(
+    'checkbox', "Humans that have hygienic housing", value=False)
 
 
-server = ModularServer(lassaModel, [grid, total_infected_graph, total_secondary_infections_graph], "Intervention Strategies for the Control of Periodic Lassa Fever Outbreaks", 
+
+
+server = ModularServer(lassaModel, [grid, total_reproduction_number_graph, total_secondary_infections_graph], "Intervention Strategies for the Control of Periodic Lassa Fever Outbreaks", 
     {   
         "N_humans": num_human_slider, 
-        "N_rats": num_rat_slider, 
-        "width": 20,
-        "height":20,
+        "N_rats": num_rat_slider,
+        "adoption_rate":adoption_rate_slider,
+        "width": 30,
+        "height":30,
         "hum_init_infection": hum_init_infection_slider,
         "rat_init_infection": rat_init_infection_slider,
         "hum_transmissibility": hum_transmissibility_slider,
-        "rat_transmissibility": rat_transmissibility_slider,
+        "rat_transmissibility": 60,
         "hum_level_of_movement": hum_level_of_movement_slider,
         "rat_level_of_movement": rat_level_of_movement_slider,
         "contagious_period_hum": hum_contagious_period_slider,
         "contagious_period_rat": rat_contagious_period_slider,
-        "rodenticide": hum_rodenticide_slider,
-        "rat_trap": rat_trap_slider,
-        "safe_food_storage": food_storage_slider,
-        "hygienic_housing": hygienic_housing_slider    
+        "rodenticide": hum_rodenticide_checkbox,
+        "rat_trap": rat_trap_checkbox,
+        "safe_food_storage": food_storage_checkbox,
+        "hygienic_housing": hygienic_housing_checkbox    
     }
 )
