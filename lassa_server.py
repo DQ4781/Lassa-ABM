@@ -1,6 +1,6 @@
 """
     Author      : Daniel Quezada
-    PI          : Dr. Samspon Akwafuo
+    PI          : Dr. Sampson Akwafuo
     File Name   : lassa_server.py
     Date        : 7/9/22
 """
@@ -38,17 +38,14 @@ grid = CanvasGrid(agent_portrayal, 30, 30, 800, 800)
 
 
 
-# Creates our charts
-total_reproduction_number_graph = ChartModule(
-    [{"Label":"Daily Reproduction Number", "Color":"SlateBlue"}],
+# Creates our SIR graph 
+sir_graph = ChartModule(
+    [{"Label":"Susceptible Humans", "Color":"SlateBlue"},
+     {"Label":"Infected Humans", "Color":"Salmon"},
+     {"Label":"Removed Humans", "Color":"LimeGreen"}],
     data_collector_name='datacollector'
     )
 
-total_secondary_infections_graph = ChartModule(
-    [{"Label":"Daily H2H Infections", "Color":"Green"},
-     {"Label":"Daily R2H Infections", "Color":"Violet"}], 
-    data_collector_name='datacollector'
-)
 
 
 
@@ -101,7 +98,7 @@ hygienic_housing_checkbox = UserSettableParameter(
 
 
 
-server = ModularServer(lassaModel, [grid, total_reproduction_number_graph, total_secondary_infections_graph], "Intervention Strategies for the Control of Periodic Lassa Fever Outbreaks", 
+server = ModularServer(lassaModel, [grid, sir_graph], "Intervention Strategies for the Control of Periodic Lassa Fever Outbreaks", 
     {   
         "N_humans": num_human_slider, 
         "N_rats": num_rat_slider,
