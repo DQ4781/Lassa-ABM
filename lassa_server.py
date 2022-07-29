@@ -89,14 +89,6 @@ hum_rodenticide_checkbox = UserSettableParameter(
 rat_trap_checkbox = UserSettableParameter(
     'checkbox', "Humans that use rat traps", value=False)
 
-food_storage_checkbox = UserSettableParameter(
-    'checkbox', "Humans that practice safe food storage", value=False)
-
-hygienic_housing_checkbox = UserSettableParameter(
-    'checkbox', "Humans that have hygienic housing", value=False)
-
-
-
 
 server = ModularServer(lassaModel, [grid, sir_graph], "Intervention Strategies for the Control of Periodic Lassa Fever Outbreaks", 
     {   
@@ -114,8 +106,6 @@ server = ModularServer(lassaModel, [grid, sir_graph], "Intervention Strategies f
         "contagious_period_hum": hum_contagious_period_slider,
         "contagious_period_rat": rat_contagious_period_slider,
         "rodenticide": hum_rodenticide_checkbox,
-        "rat_trap": rat_trap_checkbox,
-        "safe_food_storage": food_storage_checkbox,
-        "hygienic_housing": hygienic_housing_checkbox    
+        "rat_trap": rat_trap_checkbox    
     }
 )
