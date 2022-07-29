@@ -69,6 +69,9 @@ rat_init_infection_slider = UserSettableParameter(
 hum_transmissibility_slider = UserSettableParameter(
     'slider', "Transmissibilty between H2H", 20, 1, 100, 1)
 
+rat_transmissibility_slider = UserSettableParameter(
+    'slider', "Transmissibilty between R2H", 60, 1, 100, 1)
+
 hum_level_of_movement_slider = UserSettableParameter(
     'slider', "Level of movement for humans", 45, 1, 100, 1)
 
@@ -100,7 +103,7 @@ server = ModularServer(lassaModel, [grid, sir_graph], "Intervention Strategies f
         "hum_init_infection": hum_init_infection_slider,
         "rat_init_infection": rat_init_infection_slider,
         "hum_transmissibility": hum_transmissibility_slider,
-        "rat_transmissibility": 60,
+        "rat_transmissibility": rat_transmissibility_slider,
         "hum_level_of_movement": hum_level_of_movement_slider,
         "rat_level_of_movement": rat_level_of_movement_slider,
         "contagious_period_hum": hum_contagious_period_slider,
