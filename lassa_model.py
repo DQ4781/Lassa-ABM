@@ -16,7 +16,7 @@ import random
 class superAgent(Agent):
 
     def __init__(self, unique_id, model, init_infection, transmissibility, level_of_movement, 
-    contagious_period, rodenticide, rat_trap, safe_food_storage, hygienic_housing, is_human):
+    contagious_period, rodenticide, rat_trap, is_human):
         # Takes cares of the background stuff needed to create a Mesa 'Agent'
         super().__init__(unique_id, model)
 
@@ -31,12 +31,9 @@ class superAgent(Agent):
             self.contagious_period_hum      = contagious_period
             self.rodenticide                = rodenticide
             self.rat_trap                   = rat_trap
-            self.hygienic_housing           = hygienic_housing
-            self.safe_food_storage          = safe_food_storage
             self.is_human                   = True
             self.adoption_group             = False
             self.kill_chance                = 0
-            self.secondary_transmission_h2h = 0
         # Theses parameters define the attributes that make up a rat agent
         else:
             self.rat_init_infection         = init_infection
@@ -44,7 +41,6 @@ class superAgent(Agent):
             self.contagious_period_rat      = contagious_period
             self.level_of_rat_movement      = level_of_movement
             self.is_human                   = False
-            self.secondary_transmission_r2h = 0
         
         # I HAVE NO IDEA WHY THIS DOESN'T WORK UNDER THE ELSE BLOCK; TECHINCALLY ONLY BELONGS TO RAT AGENTS 
         self.r2r_transmissibility       = 40
@@ -110,12 +106,10 @@ class superAgent(Agent):
                     if self.is_human:
                         if random.uniform(0, 100) < self.h2h_transmissibility:
                             resident.infected = True
-                            self.secondary_transmission_h2h += 1
                     # R2H Transmission
                     elif not self.is_human:
                         if random.uniform(0, 100) < self.r2h_transmissibility:
                             resident.infected = True
-                            self.secondary_transmission_r2h += 1
                 # R2R Transmission
                 elif not resident.is_human and not resident.infected:
                     if random.uniform(0, 100) < self.r2r_transmissibility:
@@ -125,7 +119,7 @@ class superAgent(Agent):
 class lassaModel(Model):
 
     def __init__(self, N_humans, N_rats, adoption_rate,width, height, hum_init_infection, rat_init_infection, hum_transmissibility, rat_transmissibility, hum_level_of_movement, rat_level_of_movement, 
-    contagious_period_hum, contagious_period_rat, rodenticide, rat_trap, safe_food_storage, hygienic_housing):
+    contagious_period_hum, contagious_period_rat, rodenticide, rat_trap):
         self.running            = True
         self.num_humans         = N_humans
         self.num_rats           = N_rats
@@ -140,13 +134,11 @@ class lassaModel(Model):
         self.adoption_rate          = adoption_rate
         self.rodenticide            = rodenticide
         self.rat_trap               = rat_trap
-        self.safe_food_storage      = safe_food_storage
-        self.hygienic_housing       = hygienic_housing
 
         # Creates human agents
         for i in range(self.num_humans):
             human = superAgent(2*i, self, hum_init_infection, hum_transmissibility, hum_level_of_movement, contagious_period_hum, 
-            rodenticide, rat_trap, safe_food_storage, hygienic_housing, is_human=True)
+            rodenticide, rat_trap, is_human=True)
             self.schedule.add(human)
 
             try:
@@ -158,14 +150,14 @@ class lassaModel(Model):
                 self.grid.place_agent(human, (x,y))
 
 
-        # Once we added human agents to the scheduler, check if any of scenarios are turned on in order to randomly assign human agents to the adoption group 
-        if rodenticide or rat_trap or safe_food_storage or hygienic_housing:
+        # Check if any of scenarios are turned on in order to randomly assign human agents to the adoption group 
+        if rodenticide or rat_trap:
             determine_adoption_population(self)
             update_kill_chance(self)
 
         # Creates rat agents
         for i in range(self.num_rats):
-            rat = superAgent((2*i)+1, self, rat_init_infection, rat_transmissibility, rat_level_of_movement, contagious_period_rat, rodenticide, rat_trap, safe_food_storage, hygienic_housing, is_human=False)
+            rat = superAgent((2*i)+1, self, rat_init_infection, rat_transmissibility, rat_level_of_movement, contagious_period_rat, rodenticide, rat_trap, is_human=False)
             self.schedule.add(rat)
 
             try:
@@ -175,10 +167,6 @@ class lassaModel(Model):
                 x = random.randrange(self.grid.width)
                 y = random.randrange(self.grid.height)
                 self.grid.place_agent(rat, (x,y))
-
-        # If any of the scenarios are turned on, they we must update the rates accordingly
-        if rodenticide or rat_trap or safe_food_storage or hygienic_housing:
-            update_r2h_trans(self)
 
 
         self.datacollector = DataCollector(
@@ -223,32 +211,10 @@ def update_kill_chance(model):
             i.kill_chance = kill_chance
 
 
-def update_r2h_trans(model):
-
-    r2h_rate = model.rat_transmissibility
-
-    if model.safe_food_storage and model.hygienic_housing:
-        r2h_rate = 2
-    elif model.hygienic_housing:
-        r2h_rate = 12
-    elif model.safe_food_storage:
-        r2h_rate = 33
-
-    # Update every rat agents transmissibility variable
-    for i in model.schedule.agents:
-        if not i.is_human:
-            i.r2h_transmissibility = r2h_rate
-
-    # Update the model's global rat-to-human transmissibility variable
-    model.rat_transmissibility = r2h_rate
-
-
 def determine_kill_chance(self):
     # Determine which scenarios are turned on
     poison  = self.rodenticide
     traps   = self.rat_trap
-    food    = self.safe_food_storage
-    house   = self.hygienic_housing
 
     # Calculate the probability a human agent in the adoption group is going to exterminate a rat
     kill_chance = 0
@@ -259,8 +225,6 @@ def determine_kill_chance(self):
         kill_chance = random.randint(40,80)
     elif traps:
         kill_chance = random.randint(1,16)
-    else:
-        kill_chance = 0
 
     # Get a list of agents in the same square as the human agent
     cellmates = self.model.grid.get_cell_list_contents([self.pos])
