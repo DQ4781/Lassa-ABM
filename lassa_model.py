@@ -12,7 +12,6 @@ from mesa.datacollection import DataCollector
 
 
 import random
-import math
 
 class superAgent(Agent):
 
@@ -183,10 +182,7 @@ class lassaModel(Model):
 
 
         self.datacollector = DataCollector(
-            model_reporters={"Daily Reproduction Number":calculate_total_reproduction_number, 
-                             "Daily H2H Infections":calculate_human_secondary_infections,
-                             "Daily R2H Infections":calculate_rat_secondary_infections
-                            },
+            model_reporters={},
             agent_reporters={}
         )
 
@@ -194,113 +190,9 @@ class lassaModel(Model):
     def step(self):
         self.schedule.step()
         self.datacollector.collect(self)
-        resetInfections(self)
 
 
 
-
-
-
-# Daily Infections Graph Functions
-
-def calculate_human_secondary_infections(model):
-
-    human_secondary_infections = 0
-    agent_list = model.schedule.agents
-
-    for x in agent_list:
-        if x.is_human:
-            human_secondary_infections += x.secondary_transmission_h2h
-
-    return human_secondary_infections
-
-
-def calculate_rat_secondary_infections(model):
-
-    rat_secondary_infections = 0
-
-    agent_list = model.schedule.agents
-
-    for x in agent_list:
-        if not x.is_human:
-            rat_secondary_infections += x.secondary_transmission_r2h
-
-    return rat_secondary_infections
-
-
-
-
-
-
-# Daily Reproduction Numbers Graph Functions
-
-def calculate_human_reproduction_number(model):
-    h2h_trans_rate          = model.hum_transmissibility / 100
-    h2h_trans_avg           = calculate_avg_secondary_infection(model, "Human")
-    hum_contagious_period   = model.contagious_period_hum
-
-    h2h_r0 = h2h_trans_rate * h2h_trans_avg * hum_contagious_period
-
-    return h2h_r0
-
-
-def calculate_rat_reproduction_number(model):
-    r2h_trans_rate          = model.rat_transmissibility / 100
-    r2h_trans_avg           = calculate_avg_secondary_infection(model, "Rat")
-    rat_contagious_period   = model.contagious_period_rat
-
-    r2h_r0 = r2h_trans_rate * r2h_trans_avg * rat_contagious_period
-
-    return r2h_r0 
-
-
-def calculate_total_reproduction_number(model):
-    h2h_r0  = calculate_human_reproduction_number(model)
-    r2h_r0  = calculate_rat_reproduction_number(model) 
-    
-    trace       = h2h_r0 + r2h_r0
-    determinant = h2h_r0 * r2h_r0
-
-    first_eigenvalue    = (trace/2) + math.sqrt((trace/2)**2 - determinant)
-    second_eigenvalue   = (trace/2) - math.sqrt((trace/2)**2 - determinant)
-
-    return first_eigenvalue + second_eigenvalue
-
-
-
-
-
-# Helper Functions Related to Reproduction Numbers
-
-def resetInfections(model):
-
-    agent_list = model.schedule.agents
-
-    for x in agent_list:
-        if x.is_human:
-            x.secondary_transmission_h2h = 0
-        else:
-            x.secondary_transmission_r2h = 0
-
-
-def calculate_avg_secondary_infection(model, agentType):
-    num_humans       = 0
-    num_rats         = 0
-    total_agent_list = model.schedule.agents
-
-    # Counts how many total human/rat agents there are
-    for x in total_agent_list:
-        if x.is_human:
-            num_humans += 1
-        else:
-            num_rats += 1
-
-    if agentType == "Human":
-        avg = calculate_human_secondary_infections(model) / num_humans
-    elif agentType == "Rat":
-        avg = calculate_rat_secondary_infections(model) / num_rats
-
-    return avg
 
 
 
