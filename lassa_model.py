@@ -32,6 +32,7 @@ class superAgent(Agent):
             self.rodenticide                = rodenticide
             self.rat_trap                   = rat_trap
             self.is_human                   = True
+            self.immune                     = False
             self.adoption_group             = False
             self.kill_chance                = 0
         # Theses parameters define the attributes that make up a rat agent
@@ -74,7 +75,8 @@ class superAgent(Agent):
             self.contagious_period_hum -= 1
 
             if self.contagious_period_hum <= 0:
-                self.infected = False
+                self.infected   = False
+                self.immune     = True
 
         # Infected Rat Host (both R2H and R2R possible)
         if not self.is_human and self.infected:
@@ -99,17 +101,20 @@ class superAgent(Agent):
         cellmates = self.model.grid.get_cell_list_contents([self.pos])
 
         # Check if there are more agents in that cell
+        # For future reference: resident is the agent being infected / self is the agent doing the infecting
         if len(cellmates) > 1:
             for resident in cellmates:
-                if resident.is_human and not resident.infected:
+                if resident.is_human and not resident.infected and not resident.immune:
                     # H2H Transmission
                     if self.is_human:
                         if random.uniform(0, 100) < self.h2h_transmissibility:
                             resident.infected = True
+                            sendToInfected(resident)
                     # R2H Transmission
                     elif not self.is_human:
                         if random.uniform(0, 100) < self.r2h_transmissibility:
                             resident.infected = True
+                            sendToInfected(resident)
                 # R2R Transmission
                 elif not resident.is_human and not resident.infected:
                     if random.uniform(0, 100) < self.r2r_transmissibility:
@@ -118,7 +123,7 @@ class superAgent(Agent):
 
 class lassaModel(Model):
 
-    def __init__(self, N_humans, N_rats, adoption_rate,width, height, hum_init_infection, rat_init_infection, hum_transmissibility, rat_transmissibility, hum_level_of_movement, rat_level_of_movement, 
+    def __init__(self, N_humans, N_rats, adoption_rate, hum_case_fatality, width, height, hum_init_infection, rat_init_infection, hum_transmissibility, rat_transmissibility, hum_level_of_movement, rat_level_of_movement, 
     contagious_period_hum, contagious_period_rat, rodenticide, rat_trap):
         self.running            = True
         self.num_humans         = N_humans
@@ -134,6 +139,11 @@ class lassaModel(Model):
         self.adoption_rate          = adoption_rate
         self.rodenticide            = rodenticide
         self.rat_trap               = rat_trap
+        self.hum_case_fatality      = hum_case_fatality
+
+        self.susceptible_pop        = []
+        self.infected_pop           = []
+        self.removed_pop            = []
 
         # Creates human agents
         for i in range(self.num_humans):
@@ -149,6 +159,8 @@ class lassaModel(Model):
                 y = random.randrange(self.grid.height)
                 self.grid.place_agent(human, (x,y))
 
+        # Everybody (besides initial human infections) gets added to susceptible list 
+        determineSusPop(self)
 
         # Check if any of scenarios are turned on in order to randomly assign human agents to the adoption group 
         if rodenticide or rat_trap:
@@ -170,19 +182,60 @@ class lassaModel(Model):
 
 
         self.datacollector = DataCollector(
-            model_reporters={},
+            model_reporters={"Susceptible Humans":calculateSusceptiblePopulation,
+                             "Infected Humans":calculateInfectedPopulation,
+                             "Removed Humans":calculateRemovedPopulation},
             agent_reporters={}
         )
 
 
     def step(self):
         self.schedule.step()
+        determineHumanDeath(self)
         self.datacollector.collect(self)
 
 
+# Helper functions Related to SIR Graph
+
+def calculateSusceptiblePopulation(model):
+    percentage = len(model.susceptible_pop) / 100
+    return percentage
 
 
+def calculateInfectedPopulation(model):
+    percentage = len(model.infected_pop) / 100
+    return percentage
 
+
+def calculateRemovedPopulation(model):
+    percentage = len(model.removed_pop) / 100
+    return percentage 
+
+
+def determineSusPop(model):
+    for agent in model.schedule.agents:
+        if agent.is_human and not agent.infected:
+            model.susceptible_pop.append(agent)
+
+
+def sendToInfected(agent):
+    agent.modelType.susceptible_pop.remove(agent)
+    agent.modelType.infected_pop.append(agent)
+
+
+def determineHumanDeath(model):
+    for agent in model.infected_pop:
+        # Human dies this step and they get taken off the grid & infected list and moved towards the removed list 
+        if random.uniform(0, 100) < model.hum_case_fatality:
+            killHuman(model, agent)
+            model.infected_pop.remove(agent)
+            model.removed_pop.append(agent)
+
+
+def killHuman(model, agent):
+    model.grid.remove_agent(agent)
+    model.schedule.remove(agent)
+        
 
 
 # Helper Functions Related to Rodent Control
