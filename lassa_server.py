@@ -52,13 +52,16 @@ sir_graph = ChartModule(
 
 # Set up user sliders
 num_human_slider = UserSettableParameter(
-        'slider', "Number of Human Agents", 100, 2, 200, 1)
+        'slider', "Number of Human Agents", 200, 100, 300, 1)
 
 num_rat_slider = UserSettableParameter(
-        'slider', "Number of Rat Agents", 150, 2, 200, 1)
+        'slider', "Number of Rat Agents", 300, 100, 400, 1)
 
 adoption_rate_slider = UserSettableParameter(
     'slider', "Human Agents that Adopt Intervention Strategies(%)", 0, 0, 100, 1)
+
+hum_case_fatality_slider = UserSettableParameter(
+    'slider', "Probability that infected human dies every step", 5, 1, 100, 1)
 
 hum_init_infection_slider = UserSettableParameter(
     'slider', "Probability of Human Initial Infection(%)", 30, 1, 100, 1)
@@ -98,6 +101,7 @@ server = ModularServer(lassaModel, [grid, sir_graph], "Intervention Strategies f
         "N_humans": num_human_slider, 
         "N_rats": num_rat_slider,
         "adoption_rate":adoption_rate_slider,
+        "hum_case_fatality":hum_case_fatality_slider,
         "width": 30,
         "height":30,
         "hum_init_infection": hum_init_infection_slider,
