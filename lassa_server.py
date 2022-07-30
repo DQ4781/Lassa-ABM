@@ -52,37 +52,37 @@ sir_graph = ChartModule(
 
 # Set up user sliders
 num_human_slider = UserSettableParameter(
-        'slider', "Number of Human Agents", 200, 100, 300, 1)
+        'slider', "Number of Human Agents", 140, 100, 300, 1)
 
 num_rat_slider = UserSettableParameter(
-        'slider', "Number of Rat Agents", 300, 100, 400, 1)
+        'slider', "Number of Rat Agents", 240, 100, 400, 1)
 
 adoption_rate_slider = UserSettableParameter(
     'slider', "Human Agents that Adopt Intervention Strategies(%)", 0, 0, 100, 1)
 
 hum_case_fatality_slider = UserSettableParameter(
-    'slider', "Probability that infected human dies every step", 5, 1, 100, 1)
+    'slider', "Probability that infected human dies every step", 1, 1, 10, 1)
 
 hum_init_infection_slider = UserSettableParameter(
-    'slider', "Probability of Human Initial Infection(%)", 30, 1, 100, 1)
+    'slider', "Probability of Human Initial Infection(%)", 5, 1, 100, 1)
 
 rat_init_infection_slider = UserSettableParameter(
-    'slider', "Probability of Rat Initial Infection(%)", 50, 1, 100, 1)
+    'slider', "Probability of Rat Initial Infection(%)", 30, 1, 100, 1)
 
 hum_transmissibility_slider = UserSettableParameter(
     'slider', "Transmissibilty between H2H", 20, 1, 100, 1)
 
 rat_transmissibility_slider = UserSettableParameter(
-    'slider', "Transmissibilty between R2H", 60, 1, 100, 1)
+    'slider', "Transmissibilty between R2H", 35, 1, 100, 1)
 
 hum_level_of_movement_slider = UserSettableParameter(
-    'slider', "Level of movement for humans", 45, 1, 100, 1)
+    'slider', "Level of movement for humans", 25, 1, 100, 1)
 
 rat_level_of_movement_slider = UserSettableParameter(
     'slider', "Level of movement for rats", 65, 1, 100, 1)
 
 hum_contagious_period_slider = UserSettableParameter(
-    'slider', "Contagious period for humans(days)", 44, 21, 90, 1)
+    'slider', "Contagious period for humans(days)", 21, 7, 30, 1)
 
 rat_contagious_period_slider = UserSettableParameter(
     'slider', "Contagious period for rats(days)", 80, 21, 90, 1)
