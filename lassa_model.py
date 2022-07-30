@@ -161,6 +161,7 @@ class lassaModel(Model):
 
         # Everybody (besides initial human infections) gets added to susceptible list 
         determineSusPop(self)
+        determineInfPop(self)
 
         # Check if any of scenarios are turned on in order to randomly assign human agents to the adoption group 
         if rodenticide or rat_trap:
@@ -198,17 +199,17 @@ class lassaModel(Model):
 # Helper functions Related to SIR Graph
 
 def calculateSusceptiblePopulation(model):
-    percentage = len(model.susceptible_pop) / 100
+    percentage = len(model.susceptible_pop) / model.num_humans
     return percentage
 
 
 def calculateInfectedPopulation(model):
-    percentage = len(model.infected_pop) / 100
+    percentage = len(model.infected_pop) / model.num_humans
     return percentage
 
 
 def calculateRemovedPopulation(model):
-    percentage = len(model.removed_pop) / 100
+    percentage = len(model.removed_pop) / model.num_humans
     return percentage 
 
 
@@ -217,6 +218,10 @@ def determineSusPop(model):
         if agent.is_human and not agent.infected:
             model.susceptible_pop.append(agent)
 
+def determineInfPop(model):
+    for agent in model.schedule.agents:
+        if agent.is_human and agent.infected:
+            model.infected_pop.append(agent)
 
 def sendToInfected(agent):
     agent.modelType.susceptible_pop.remove(agent)
