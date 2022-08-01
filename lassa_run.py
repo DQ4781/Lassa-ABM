@@ -1,6 +1,6 @@
 """
     Author      : Daniel Quezada
-    PI          : Dr. Samspon Akwafuo
+    PI          : Dr. Sampson Akwafuo
     File Name   : lassa_run.py
     Date        : 7/9/22 
 """
