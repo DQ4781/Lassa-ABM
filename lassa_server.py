@@ -32,7 +32,7 @@ def agent_portrayal(agent):
 
 
 # Setups how the grid is going to be displayed on the webpage
-grid = CanvasGrid(agent_portrayal, 30, 30, 800, 800)
+grid = CanvasGrid(agent_portrayal, 50, 50, 1000, 1000)
 
 
 
@@ -43,7 +43,7 @@ sir_graph = ChartModule(
     [{"Label":"Susceptible Humans", "Color":"SlateBlue"},
      {"Label":"Infected Humans", "Color":"Salmon"},
      {"Label":"Removed Humans", "Color":"LimeGreen"}],
-    data_collector_name='datacollector'
+    data_collector_name='datacollector', canvas_height=1000, canvas_width=1000
     )
 
 
@@ -52,10 +52,10 @@ sir_graph = ChartModule(
 
 # Set up user sliders
 num_human_slider = UserSettableParameter(
-        'slider', "Number of Human Agents", 140, 100, 300, 1)
+        'slider', "Number of Human Agents", 300, 100, 500, 1)
 
 num_rat_slider = UserSettableParameter(
-        'slider', "Number of Rat Agents", 240, 100, 400, 1)
+        'slider', "Number of Rat Agents", 500, 100, 700, 1)
 
 adoption_rate_slider = UserSettableParameter(
     'slider', "Human Agents that Adopt Intervention Strategies(%)", 0, 0, 100, 1)
@@ -102,8 +102,8 @@ server = ModularServer(lassaModel, [grid, sir_graph], "Intervention Strategies f
         "N_rats": num_rat_slider,
         "adoption_rate":adoption_rate_slider,
         "hum_case_fatality":hum_case_fatality_slider,
-        "width": 30,
-        "height":30,
+        "width":50,
+        "height":50,
         "hum_init_infection": hum_init_infection_slider,
         "rat_init_infection": rat_init_infection_slider,
         "hum_transmissibility": hum_transmissibility_slider,
