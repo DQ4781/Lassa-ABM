@@ -199,17 +199,17 @@ class lassaModel(Model):
 # Helper functions Related to SIR Graph
 
 def calculateSusceptiblePopulation(model):
-    percentage = len(model.susceptible_pop) / model.num_humans
+    percentage = (len(model.susceptible_pop) / model.num_humans) * 100
     return percentage
 
 
 def calculateInfectedPopulation(model):
-    percentage = len(model.infected_pop) / model.num_humans
+    percentage = (len(model.infected_pop) / model.num_humans) * 100
     return percentage
 
 
 def calculateRemovedPopulation(model):
-    percentage = len(model.removed_pop) / model.num_humans
+    percentage = (len(model.removed_pop) / model.num_humans) * 100
     return percentage 
 
 
