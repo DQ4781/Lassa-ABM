@@ -77,6 +77,7 @@ class superAgent(Agent):
             if self.contagious_period_hum <= 0:
                 self.infected   = False
                 self.immune     = True
+                sendToRemoved(self)
 
         # Infected Rat Host (both R2H and R2R possible)
         if not self.is_human and self.infected:
@@ -227,7 +228,10 @@ def sendToInfected(agent):
     agent.modelType.susceptible_pop.remove(agent)
     agent.modelType.infected_pop.append(agent)
 
-
+def sendToRemoved(agent):
+    agent.modelType.infected_pop.remove(agent)
+    agent.modelType.removed_pop.append(agent)
+    
 def determineHumanDeath(model):
     for agent in model.infected_pop:
         # Human dies this step and they get taken off the grid & infected list and moved towards the removed list 
