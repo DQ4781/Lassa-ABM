@@ -85,7 +85,7 @@ hum_contagious_period_slider = UserSettableParameter(
     'slider', "Contagious period for humans(days)", 21, 7, 30, 1)
 
 rat_contagious_period_slider = UserSettableParameter(
-    'slider', "Contagious period for rats(days)", 80, 21, 90, 1)
+    'slider', "Contagious period for rats(days)", 45, 21, 90, 1)
 
 
 # Set up user checkboxes
