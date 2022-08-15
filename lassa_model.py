@@ -12,12 +12,11 @@ from mesa.datacollection import DataCollector
 
 
 import random
-import math
 
 class superAgent(Agent):
 
     def __init__(self, unique_id, model, init_infection, transmissibility, level_of_movement, 
-    contagious_period, rodenticide, rat_trap, safe_food_storage, hygienic_housing, is_human):
+    contagious_period, rodenticide, rat_trap, is_human):
         # Takes cares of the background stuff needed to create a Mesa 'Agent'
         super().__init__(unique_id, model)
 
@@ -32,12 +31,10 @@ class superAgent(Agent):
             self.contagious_period_hum      = contagious_period
             self.rodenticide                = rodenticide
             self.rat_trap                   = rat_trap
-            self.hygienic_housing           = hygienic_housing
-            self.safe_food_storage          = safe_food_storage
             self.is_human                   = True
+            self.immune                     = False
             self.adoption_group             = False
             self.kill_chance                = 0
-            self.secondary_transmission_h2h = 0
         # Theses parameters define the attributes that make up a rat agent
         else:
             self.rat_init_infection         = init_infection
@@ -45,7 +42,6 @@ class superAgent(Agent):
             self.contagious_period_rat      = contagious_period
             self.level_of_rat_movement      = level_of_movement
             self.is_human                   = False
-            self.secondary_transmission_r2h = 0
         
         # I HAVE NO IDEA WHY THIS DOESN'T WORK UNDER THE ELSE BLOCK; TECHINCALLY ONLY BELONGS TO RAT AGENTS 
         self.r2r_transmissibility       = 40
@@ -79,7 +75,9 @@ class superAgent(Agent):
             self.contagious_period_hum -= 1
 
             if self.contagious_period_hum <= 0:
-                self.infected = False
+                self.infected   = False
+                self.immune     = True
+                sendToRemoved(self)
 
         # Infected Rat Host (both R2H and R2R possible)
         if not self.is_human and self.infected:
@@ -104,19 +102,20 @@ class superAgent(Agent):
         cellmates = self.model.grid.get_cell_list_contents([self.pos])
 
         # Check if there are more agents in that cell
+        # For future reference: resident is the agent being infected / self is the agent doing the infecting
         if len(cellmates) > 1:
             for resident in cellmates:
-                if resident.is_human and not resident.infected:
+                if resident.is_human and not resident.infected and not resident.immune:
                     # H2H Transmission
                     if self.is_human:
                         if random.uniform(0, 100) < self.h2h_transmissibility:
                             resident.infected = True
-                            self.secondary_transmission_h2h += 1
+                            sendToInfected(resident)
                     # R2H Transmission
                     elif not self.is_human:
                         if random.uniform(0, 100) < self.r2h_transmissibility:
                             resident.infected = True
-                            self.secondary_transmission_r2h += 1
+                            sendToInfected(resident)
                 # R2R Transmission
                 elif not resident.is_human and not resident.infected:
                     if random.uniform(0, 100) < self.r2r_transmissibility:
@@ -125,8 +124,8 @@ class superAgent(Agent):
 
 class lassaModel(Model):
 
-    def __init__(self, N_humans, N_rats, adoption_rate,width, height, hum_init_infection, rat_init_infection, hum_transmissibility, rat_transmissibility, hum_level_of_movement, rat_level_of_movement, 
-    contagious_period_hum, contagious_period_rat, rodenticide, rat_trap, safe_food_storage, hygienic_housing):
+    def __init__(self, N_humans, N_rats, adoption_rate, hum_case_fatality, width, height, hum_init_infection, rat_init_infection, hum_transmissibility, rat_transmissibility, hum_level_of_movement, rat_level_of_movement, 
+    contagious_period_hum, contagious_period_rat, rodenticide, rat_trap):
         self.running            = True
         self.num_humans         = N_humans
         self.num_rats           = N_rats
@@ -141,13 +140,16 @@ class lassaModel(Model):
         self.adoption_rate          = adoption_rate
         self.rodenticide            = rodenticide
         self.rat_trap               = rat_trap
-        self.safe_food_storage      = safe_food_storage
-        self.hygienic_housing       = hygienic_housing
+        self.hum_case_fatality      = hum_case_fatality
+
+        self.susceptible_pop        = []
+        self.infected_pop           = []
+        self.removed_pop            = []
 
         # Creates human agents
         for i in range(self.num_humans):
             human = superAgent(2*i, self, hum_init_infection, hum_transmissibility, hum_level_of_movement, contagious_period_hum, 
-            rodenticide, rat_trap, safe_food_storage, hygienic_housing, is_human=True)
+            rodenticide, rat_trap, is_human=True)
             self.schedule.add(human)
 
             try:
@@ -158,15 +160,18 @@ class lassaModel(Model):
                 y = random.randrange(self.grid.height)
                 self.grid.place_agent(human, (x,y))
 
+        # Everybody (besides initial human infections) gets added to susceptible list 
+        determineSusPop(self)
+        determineInfPop(self)
 
-        # Once we added human agents to the scheduler, check if any of scenarios are turned on in order to randomly assign human agents to the adoption group 
-        if rodenticide or rat_trap or safe_food_storage or hygienic_housing:
+        # Check if any of scenarios are turned on in order to randomly assign human agents to the adoption group 
+        if rodenticide or rat_trap:
             determine_adoption_population(self)
             update_kill_chance(self)
 
         # Creates rat agents
         for i in range(self.num_rats):
-            rat = superAgent((2*i)+1, self, rat_init_infection, rat_transmissibility, rat_level_of_movement, contagious_period_rat, rodenticide, rat_trap, safe_food_storage, hygienic_housing, is_human=False)
+            rat = superAgent((2*i)+1, self, rat_init_infection, rat_transmissibility, rat_level_of_movement, contagious_period_rat, rodenticide, rat_trap, is_human=False)
             self.schedule.add(rat)
 
             try:
@@ -177,132 +182,69 @@ class lassaModel(Model):
                 y = random.randrange(self.grid.height)
                 self.grid.place_agent(rat, (x,y))
 
-        # If any of the scenarios are turned on, they we must update the rates accordingly
-        if rodenticide or rat_trap or safe_food_storage or hygienic_housing:
-            update_r2h_trans(self)
-
 
         self.datacollector = DataCollector(
-            model_reporters={"Daily Reproduction Number":calculate_total_reproduction_number, 
-                             "Daily H2H Infections":calculate_human_secondary_infections,
-                             "Daily R2H Infections":calculate_rat_secondary_infections
-                            },
+            model_reporters={"Susceptible Humans":calculateSusceptiblePopulation,
+                             "Infected Humans":calculateInfectedPopulation,
+                             "Removed Humans":calculateRemovedPopulation},
             agent_reporters={}
         )
 
 
     def step(self):
         self.schedule.step()
+        determineHumanDeath(self)
         self.datacollector.collect(self)
-        resetInfections(self)
 
 
+# Helper functions Related to SIR Graph
+
+def calculateSusceptiblePopulation(model):
+    percentage = (len(model.susceptible_pop) / model.num_humans) * 100
+    return percentage
 
 
+def calculateInfectedPopulation(model):
+    percentage = (len(model.infected_pop) / model.num_humans) * 100
+    return percentage
 
 
-# Daily Infections Graph Functions
-
-def calculate_human_secondary_infections(model):
-
-    human_secondary_infections = 0
-    agent_list = model.schedule.agents
-
-    for x in agent_list:
-        if x.is_human:
-            human_secondary_infections += x.secondary_transmission_h2h
-
-    return human_secondary_infections
+def calculateRemovedPopulation(model):
+    percentage = (len(model.removed_pop) / model.num_humans) * 100
+    return percentage 
 
 
-def calculate_rat_secondary_infections(model):
+def determineSusPop(model):
+    for agent in model.schedule.agents:
+        if agent.is_human and not agent.infected:
+            model.susceptible_pop.append(agent)
 
-    rat_secondary_infections = 0
+def determineInfPop(model):
+    for agent in model.schedule.agents:
+        if agent.is_human and agent.infected:
+            model.infected_pop.append(agent)
 
-    agent_list = model.schedule.agents
+def sendToInfected(agent):
+    agent.modelType.susceptible_pop.remove(agent)
+    agent.modelType.infected_pop.append(agent)
 
-    for x in agent_list:
-        if not x.is_human:
-            rat_secondary_infections += x.secondary_transmission_r2h
-
-    return rat_secondary_infections
-
-
-
-
-
-
-# Daily Reproduction Numbers Graph Functions
-
-def calculate_human_reproduction_number(model):
-    h2h_trans_rate          = model.hum_transmissibility / 100
-    h2h_trans_avg           = calculate_avg_secondary_infection(model, "Human")
-    hum_contagious_period   = model.contagious_period_hum
-
-    h2h_r0 = h2h_trans_rate * h2h_trans_avg * hum_contagious_period
-
-    return h2h_r0
-
-
-def calculate_rat_reproduction_number(model):
-    r2h_trans_rate          = model.rat_transmissibility / 100
-    r2h_trans_avg           = calculate_avg_secondary_infection(model, "Rat")
-    rat_contagious_period   = model.contagious_period_rat
-
-    r2h_r0 = r2h_trans_rate * r2h_trans_avg * rat_contagious_period
-
-    return r2h_r0 
-
-
-def calculate_total_reproduction_number(model):
-    h2h_r0  = calculate_human_reproduction_number(model)
-    r2h_r0  = calculate_rat_reproduction_number(model) 
+def sendToRemoved(agent):
+    agent.modelType.infected_pop.remove(agent)
+    agent.modelType.removed_pop.append(agent)
     
-    trace       = h2h_r0 + r2h_r0
-    determinant = h2h_r0 * r2h_r0
-
-    first_eigenvalue    = (trace/2) + math.sqrt((trace/2)**2 - determinant)
-    second_eigenvalue   = (trace/2) - math.sqrt((trace/2)**2 - determinant)
-
-    return first_eigenvalue + second_eigenvalue
-
-
+def determineHumanDeath(model):
+    for agent in model.infected_pop:
+        # Human dies this step and they get taken off the grid & infected list and moved towards the removed list 
+        if random.uniform(0, 100) < model.hum_case_fatality:
+            killHuman(model, agent)
+            model.infected_pop.remove(agent)
+            model.removed_pop.append(agent)
 
 
-
-# Helper Functions Related to Reproduction Numbers
-
-def resetInfections(model):
-
-    agent_list = model.schedule.agents
-
-    for x in agent_list:
-        if x.is_human:
-            x.secondary_transmission_h2h = 0
-        else:
-            x.secondary_transmission_r2h = 0
-
-
-def calculate_avg_secondary_infection(model, agentType):
-    num_humans       = 0
-    num_rats         = 0
-    total_agent_list = model.schedule.agents
-
-    # Counts how many total human/rat agents there are
-    for x in total_agent_list:
-        if x.is_human:
-            num_humans += 1
-        else:
-            num_rats += 1
-
-    if agentType == "Human":
-        avg = calculate_human_secondary_infections(model) / num_humans
-    elif agentType == "Rat":
-        avg = calculate_rat_secondary_infections(model) / num_rats
-
-    return avg
-
-
+def killHuman(model, agent):
+    model.grid.remove_agent(agent)
+    model.schedule.remove(agent)
+        
 
 
 # Helper Functions Related to Rodent Control
@@ -331,32 +273,10 @@ def update_kill_chance(model):
             i.kill_chance = kill_chance
 
 
-def update_r2h_trans(model):
-
-    r2h_rate = model.rat_transmissibility
-
-    if model.safe_food_storage and model.hygienic_housing:
-        r2h_rate = 2
-    elif model.hygienic_housing:
-        r2h_rate = 12
-    elif model.safe_food_storage:
-        r2h_rate = 33
-
-    # Update every rat agents transmissibility variable
-    for i in model.schedule.agents:
-        if not i.is_human:
-            i.r2h_transmissibility = r2h_rate
-
-    # Update the model's global rat-to-human transmissibility variable
-    model.rat_transmissibility = r2h_rate
-
-
 def determine_kill_chance(self):
     # Determine which scenarios are turned on
     poison  = self.rodenticide
     traps   = self.rat_trap
-    food    = self.safe_food_storage
-    house   = self.hygienic_housing
 
     # Calculate the probability a human agent in the adoption group is going to exterminate a rat
     kill_chance = 0
@@ -367,8 +287,6 @@ def determine_kill_chance(self):
         kill_chance = random.randint(40,80)
     elif traps:
         kill_chance = random.randint(1,16)
-    else:
-        kill_chance = 0
 
     # Get a list of agents in the same square as the human agent
     cellmates = self.model.grid.get_cell_list_contents([self.pos])
