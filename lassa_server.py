@@ -96,7 +96,7 @@ rat_trap_checkbox = UserSettableParameter(
     'checkbox', "Humans that use rat traps", value=False)
 
 
-server = ModularServer(lassaModel, [grid, sir_graph], "Intervention Strategies for the Control of Periodic Lassa Fever Outbreaks", 
+server = ModularServer(lassaModel, [sir_graph, grid], "Intervention Strategies for the Control of Periodic Lassa Fever Outbreaks", 
     {   
         "N_humans": num_human_slider, 
         "N_rats": num_rat_slider,
